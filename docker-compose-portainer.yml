@@ -1,74 +1,6 @@
 version: '3.8'
 
 services:
-  # traefik:
-  #   image: traefik:v2.9
-  #   command:
-  #     - "--api.dashboard=true"
-  #     - "--api.insecure=false"
-  #     - "--providers.docker=true"
-  #     - "--entrypoints.web.address=:80"
-  #     - "--entrypoints.websecure.address=:443"
-  #     - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
-  #     - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
-  #     - "--certificatesresolvers.myresolver.acme.email=${ACME_EMAIL}"
-  #     - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
-  #     - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
-  #     - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
-  #     - "--providers.file.filename=/tls-dynamic.yml"
-
-  #   ports:
-  #     - "80:80"
-  #     # Testing to see if this port is actually necessary. I think maybe not.
-  #     # - "8080:8080"
-  #     - "443:443"
-  #   volumes:
-  #     - "/var/run/docker.sock:/var/run/docker.sock:ro"
-  #     - "/root/selfhosted/letsencrypt:/letsencrypt"
-  #     - "./certs:/certs:ro"
-  #     - "./tls-dynamic.yml:/tls-dynamic.yml:ro" 
-  #   networks:
-  #     - web
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "traefik.http.routers.traefik-dashboard.rule=Host(`dashboard.zimos3d.com`)"
-  #     - "traefik.http.routers.traefik-dashboard.service=api@internal"
-  #     - "traefik.http.routers.traefik-dashboard.entrypoints=websecure"
-  #     - "traefik.http.routers.traefik-dashboard.tls.certresolver=myresolver"
-
-  # cloudflared:
-  #   image: cloudflare/cloudflared:2024.5.0
-  #   restart: unless-stopped
-  #   environment:
-  #     - TUNNEL_TOKEN=${TUNNEL_TOKEN}
-  #   command: 
-  #     - tunnel
-  #     - run
-  #   volumes:
-  #     - ./cloudflared/config.yml:/etc/cloudflared/config.yml:ro
-  #   networks:
-  #     - web
-  #   labels:
-  #     - "traefik.enable=false"
-
-  # portainer:
-  #   image: portainer/portainer-ce:latest
-  #   container_name: portainer
-  #   restart: unless-stopped
-  #   ports:
-  #     - "9000:9000"
-  #   volumes:
-  #     - /var/run/docker.sock:/var/run/docker.sock
-  #     - portainer_data:/data
-  #   networks:
-  #     - web
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "traefik.http.routers.portainer.rule=Host(`portainer.zimos3d.com`)"
-  #     - "traefik.http.routers.portainer.entrypoints=websecure"
-  #     - "traefik.http.routers.portainer.tls=true"
-  #     - "traefik.http.routers.portainer.tls.certresolver=myresolver"
-  #     - "traefik.http.services.portainer.loadbalancer.server.port=9000"
 
   ollama:
     image: ollama/ollama:latest
@@ -118,7 +50,6 @@ services:
       - FOUNDRY_HOSTNAME=${FOUNDRY_HOSTNAME}
     volumes:
       - foundry_data:/data
-      # - ~/foundry-userdata:/data
     networks:
       - web
     labels:
@@ -142,8 +73,6 @@ services:
       - web
 
   n8n:
-    # ports:
-      # - "5678:5678"
     image: n8nio/n8n
     restart: unless-stopped
     environment:
@@ -178,13 +107,12 @@ services:
 
   comfyui:
     image: obeliks/comfyui:master-cu118
-    # container_name: comfyui
     restart: unless-stopped
     runtime: nvidia  
     networks:
       - web
     ports:
-      - "8188:8188"  # Optional if you're using Traefik
+      - "8188:8188"  
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=all  
@@ -193,12 +121,11 @@ services:
       - "traefik.http.routers.comfyui.rule=Host(`comfy.zimos3d.com`)"
       - "traefik.http.routers.comfyui.entrypoints=websecure"
       - "traefik.http.routers.comfyui.tls=true"
-      # - "traefik.http.services.comfyui.loadbalancer.server.port=8188"
     volumes:
       - comfyui_data:/workspace
-      - ~/comfyui_data/models:/app/models  # Persistent model storage
-      - ~/comfyui_data/input:/app/input    # Optional: input images
-      - ~/comfyui_data/output:/app/output  # Optional: output images
+      - /mnt/e/selfhosted/comfyui_data/models:/app/models  # Persistent model storage
+      - /mnt/e/selfhosted/comfyui_data/input:/app/input    # Optional: input images
+      - /mnt/e/selfhosted/comfyui_data/output:/app/output  # Optional: output images
 
     
 networks:
@@ -206,8 +133,6 @@ networks:
     external: true
 
 volumes:
-  # traefik_letsencrypt:
-  #   driver: local
   ollama_data:
     driver: local
   openwebui_data:
@@ -220,5 +145,3 @@ volumes:
     driver: local
   comfyui_data:
     driver: local
-  # cloudflared_config:
-  #   driver: local
