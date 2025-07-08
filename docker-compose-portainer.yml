@@ -127,12 +127,34 @@ services:
       - /mnt/e/selfhosted/comfyui_data/input:/app/input    # Optional: input images
       - /mnt/e/selfhosted/comfyui_data/output:/app/output  # Optional: output images
 
+services:
+  invokeai:
+    image: ghcr.io/invoke-ai/invokeai:latest
+    ports:
+      - "9090:9090"  # WebUI
+    volumes:
+      - invoke_data:/invokeai
+    environment:
+      - INVOKEAI_WEB=1
+    networks:
+      - web
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.invokeai.rule=Host(`invokeai.zimos3d.com`)"
+      # - "traefik.http.services.invokeai.loadbalancer.server.port=9090"
+      - "traefik.http.routers.invokeai.entrypoints=websecure"
+      - "traefik.http.routers.invokeai.tls.certresolver=letsencrypt"
+
+
     
 networks:
   web:
     external: true
 
+
+
 volumes:
+
   ollama_data:
     driver: local
   openwebui_data:
@@ -144,4 +166,6 @@ volumes:
   n8n_postgres_data:
     driver: local
   comfyui_data:
+    driver: local
+  invoke_data:
     driver: local
