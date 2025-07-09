@@ -4,6 +4,7 @@ services:
 
   ollama:
     image: ollama/ollama:latest
+    restart: unless-stopped
     runtime: nvidia
     ports:
       - "11434:11434"
@@ -22,6 +23,7 @@ services:
 
   openwebui:
     image: ghcr.io/open-webui/open-webui:main
+    restart: unless-stopped
     environment:
       - OLLAMA_API_BASE_URL=http://ollama:11434
       - OPENAI_API_KEY=none
@@ -41,6 +43,7 @@ services:
 
   foundryvtt:
     image: felddy/foundryvtt:12.343.0
+    restart: unless-stopped
     environment:
       - FOUNDRY_USERNAME=${FOUNDRY_USERNAME}
       - FOUNDRY_PASSWORD=${FOUNDRY_PASSWORD}
@@ -127,9 +130,9 @@ services:
       - /mnt/e/selfhosted/comfyui_data/input:/app/input    # Optional: input images
       - /mnt/e/selfhosted/comfyui_data/output:/app/output  # Optional: output images
 
-services:
   invokeai:
     image: ghcr.io/invoke-ai/invokeai:latest
+    restart: unless-stopped
     ports:
       - "9090:9090"  # WebUI
     volumes:

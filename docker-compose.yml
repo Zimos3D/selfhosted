@@ -3,6 +3,7 @@ version: '3.8'
 services:
   traefik:
     image: traefik:v2.9
+    restart: unless-stopped
     command:
       - "--api.dashboard=true"
       - "--api.insecure=false"
@@ -70,110 +71,6 @@ services:
       - "traefik.http.routers.portainer.tls.certresolver=myresolver"
       - "traefik.http.services.portainer.loadbalancer.server.port=9000"
 
-  # ollama:
-  #   image: ollama/ollama:latest
-  #   runtime: nvidia
-  #   ports:
-  #     - "11434:11434"
-  #   environment:
-  #     - NVIDIA_VISIBLE_DEVICES=all
-  #   volumes:
-  #     - ollama_data:/root/.ollama
-  #   networks:
-  #     - web
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "traefik.http.routers.ollama.rule=Host(`ollama.zimos3d.com`)"
-  #     - "traefik.http.routers.ollama.entrypoints=websecure"
-  #     - "traefik.http.routers.ollama.tls=true"
-  #     - "traefik.http.routers.ollama.tls.certresolver=myresolver"
-
-  # openwebui:
-  #   image: ghcr.io/open-webui/open-webui:main
-  #   environment:
-  #     - OLLAMA_API_BASE_URL=http://ollama:11434
-  #     - OPENAI_API_KEY=none
-  #   volumes:
-  #     - openwebui_data:/app/backend/data
-  #   networks:
-  #     - web
-  #   depends_on:
-  #     - ollama
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "traefik.http.routers.openwebui.rule=Host(`zgpt.zimos3d.com`)"
-  #     - "traefik.http.routers.openwebui.entrypoints=websecure"
-  #     - "traefik.http.routers.openwebui.tls=true"
-  #     - "traefik.http.routers.openwebui.tls.certresolver=myresolver"
-
-
-  # foundryvtt:
-  #   image: felddy/foundryvtt:12.343.0
-  #   environment:
-  #     - FOUNDRY_USERNAME=${FOUNDRY_USERNAME}
-  #     - FOUNDRY_PASSWORD=${FOUNDRY_PASSWORD}
-  #     - FOUNDRY_ADMIN_KEY=${FOUNDRY_ADMIN_KEY}
-  #     - FOUNDRY_PROXY_SSL=true
-  #     - FOUNDRY_PROXY_PORT=443
-  #     - FOUNDRY_HOSTNAME=${FOUNDRY_HOSTNAME}
-  #   volumes:
-  #     - ~/foundry-userdata:/data
-  #   networks:
-  #     - web
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "traefik.http.routers.foundry.rule=Host(`foundry.zimos3d.com`)"
-  #     - "traefik.http.routers.foundry.entrypoints=websecure"
-  #     - "traefik.http.routers.foundry.tls=true"
-  #     - "traefik.http.routers.foundry.tls.certresolver=myresolver"
-
-
-  # postgres:
-  #   image: postgres:15
-  #   restart: unless-stopped
-  #   environment:
-  #     POSTGRES_DB: n8n
-  #     POSTGRES_USER: n8n_user
-  #     POSTGRES_PASSWORD: ${N8N_DB_PASSWORD}
-  #   volumes:
-  #     - n8n_postgres_data:/var/lib/postgresql/data
-  #   networks:
-  #     - web
-
-  # n8n:
-  #   # ports:
-  #     # - "5678:5678"
-  #   image: n8nio/n8n
-  #   restart: unless-stopped
-  #   environment:
-  #     - DB_TYPE=postgresdb
-  #     - DB_POSTGRESDB_HOST=postgres
-  #     - DB_POSTGRESDB_PORT=5432
-  #     - DB_POSTGRESDB_DATABASE=n8n
-  #     - DB_POSTGRESDB_USER=n8n_user
-  #     - DB_POSTGRESDB_PASSWORD=${N8N_DB_PASSWORD}
-  #     - N8N_BASIC_AUTH_ACTIVE=true
-  #     - N8N_BASIC_AUTH_USER=${N8N_USER}
-  #     - N8N_BASIC_AUTH_PASSWORD=${N8N_PASSWORD}
-  #     - WEBHOOK_TUNNEL_URL=https://n8n.zimos3d.com
-  #     - WEBHOOK_URL=https://n8n.zimos3d.com
-  #     - N8N_WEBHOOK_URL=https://n8n.zimos3d.com
-  #     - N8N_HOST=n8n.zimos3d.com
-  #     - N8N_PROTOCOL=https
-  #     - N8N_PORT=5678
-
-  #   volumes:
-  #     - n8n_data:/home/node/.n8n
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "traefik.http.routers.n8n.rule=Host(`n8n.zimos3d.com`)"
-  #     - "traefik.http.routers.n8n.entrypoints=websecure"
-  #     - "traefik.http.routers.n8n.tls.certresolver=myresolver"
-
-  #   depends_on:
-  #     - postgres
-  #   networks:
-  #     - web
 
 networks:
   web:
@@ -181,20 +78,9 @@ networks:
     driver: bridge
 
 volumes:
-  # traefik_letsencrypt:
-  #   driver: local
-  # cloudflared_config:
-  #   driver: local
+  traefik_letsencrypt:
+    driver: local
+  cloudflared_config:
+    driver: local
   portainer_data:
     driver: local
-  # ollama_data:
-  #   driver: local
-  # openwebui_data:
-  #   driver: local
-  # foundry_data:
-  #   driver: local
-  # n8n_data:
-  #   driver: local
-  # n8n_postgres_data:
-  #   driver: local
-    
