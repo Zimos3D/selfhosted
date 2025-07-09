@@ -1,0 +1,6 @@
+tls:
+  stores:
+    default:
+      defaultCertificate:
+        certFile: /certs/cf-origin.pem
+        keyFile:  /certs/cf-origin.key

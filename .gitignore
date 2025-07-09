@@ -1,0 +1,6 @@
+/.env
+/letsencrypt
+/certs
+/comfyui_data
+/foundry-userdata
+/cloudflared
