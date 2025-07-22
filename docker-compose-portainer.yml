@@ -130,23 +130,25 @@ services:
       - /mnt/e/selfhosted/comfyui_data/input:/app/input    # Optional: input images
       - /mnt/e/selfhosted/comfyui_data/output:/app/output  # Optional: output images
 
-  invokeai:
-    image: ghcr.io/invoke-ai/invokeai:latest
-    restart: unless-stopped
-    ports:
-      - "9090:9090"  # WebUI
-    volumes:
-      - invoke_data:/invokeai
-    environment:
-      - INVOKEAI_WEB=1
-    networks:
-      - web
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.invokeai.rule=Host(`invokeai.zimos3d.com`)"
-      # - "traefik.http.services.invokeai.loadbalancer.server.port=9090"
-      - "traefik.http.routers.invokeai.entrypoints=websecure"
-      - "traefik.http.routers.invokeai.tls.certresolver=letsencrypt"
+  # invokeai:
+  #   image: ghcr.io/invoke-ai/invokeai:latest
+  #   restart: unless-stopped
+  #   ports:
+  #     - "9090:9090"  # WebUI
+  #   volumes:
+  #     - invoke_data:/invokeai
+  #   environment:
+  #     - INVOKEAI_WEB=1
+  #     - NVIDIA_VISIBLE_DEVICES=all
+  #     - NVIDIA_DRIVER_CAPABILITIES=all 
+  #   networks:
+  #     - web
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.invokeai.rule=Host(`invokeai.zimos3d.com`)"
+  #     # - "traefik.http.services.invokeai.loadbalancer.server.port=9090"
+  #     - "traefik.http.routers.invokeai.entrypoints=websecure"
+  #     - "traefik.http.routers.invokeai.tls.certresolver=letsencrypt"
 
 
     
@@ -170,5 +172,5 @@ volumes:
     driver: local
   comfyui_data:
     driver: local
-  invoke_data:
-    driver: local
+  # invoke_data:
+  #   driver: local
