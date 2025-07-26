@@ -150,6 +150,30 @@ services:
   #     - "traefik.http.routers.invokeai.entrypoints=websecure"
   #     - "traefik.http.routers.invokeai.tls.certresolver=letsencrypt"
 
+  whisper:
+    container_name: whisper-asr
+    image: onerahmet/openai-whisper-asr-webservice:latest-gpu
+    restart: unless-stopped
+    ports:
+      - "9001:9000"
+    environment:
+      - ASR_ENGINE=whisperx
+      - ASR_MODEL=medium
+      - HF_TOKEN=${HUGGINGFACE_TOKEN}
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - WHISPER_URL=http://whisper:9001 
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    volumes:
+      - whisper_models:/root/.cache/whisper
+    networks:
+      - web
 
     
 networks:
@@ -171,6 +195,8 @@ volumes:
   n8n_postgres_data:
     driver: local
   comfyui_data:
+    driver: local
+  whisper_models:
     driver: local
   # invoke_data:
   #   driver: local
