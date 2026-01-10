@@ -76,6 +76,9 @@ services:
       - web
 
   n8n:
+    build:
+      context: ./services/n8n-ffmpeg
+      dockerfile: Dockerfile
     image: n8n-ffmpeg:latest
     restart: unless-stopped
     environment:
