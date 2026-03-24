@@ -166,7 +166,6 @@ networks:
   web:
     external: true
 
-
 volumes:
   ollama_data:
     external: true
