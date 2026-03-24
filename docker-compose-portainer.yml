@@ -42,7 +42,7 @@ services:
 
 
   foundryvtt:
-    image: felddy/foundryvtt:13
+    image: felddy/foundryvtt:13.351
     restart: unless-stopped
     environment:
       - FOUNDRY_USERNAME=${FOUNDRY_USERNAME}
