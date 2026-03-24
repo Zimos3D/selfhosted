@@ -42,7 +42,7 @@ services:
 
 
   foundryvtt:
-    image: felddy/foundryvtt:13.351
+    image: felddy/foundryvtt:13
     restart: unless-stopped
     environment:
       - FOUNDRY_USERNAME=${FOUNDRY_USERNAME}
@@ -76,7 +76,10 @@ services:
       - web
 
   n8n:
-    image: n8nio/n8n
+    build:
+      context: ./services/n8n-ffmpeg
+      dockerfile: Dockerfile
+    image: n8n-ffmpeg:latest
     restart: unless-stopped
     environment:
       - DB_TYPE=postgresdb
@@ -129,6 +132,9 @@ services:
       - /mnt/e/selfhosted/comfyui_data/models:/app/models  # Persistent model storage
       - /mnt/e/selfhosted/comfyui_data/input:/app/input    # Optional: input images
       - /mnt/e/selfhosted/comfyui_data/output:/app/output  # Optional: output images
+    command: >
+      python main.py --listen 0.0.0.0 --port 8188 --lowvram
+
 
   whisper:
     container_name: whisper-asr
