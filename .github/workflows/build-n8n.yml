@@ -28,7 +28,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./services/n8n-ffmpeg
           push: true
           # This creates an image named: ghcr.io/zimos3d/n8n-custom:latest
           tags: ghcr.io/zimos3d/n8n-custom:latest
