@@ -1,5 +1,5 @@
 # Start from the official n8n image specified in your compose file
-FROM n8nio/n8n:latest
+FROM n8nio/n8n:latest-alpine
 
 # Install FFmpeg using Alpine's package manager (apk)
 USER root
