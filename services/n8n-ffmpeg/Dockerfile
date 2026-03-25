@@ -1,14 +1,14 @@
-# Use the n8n base image
+# Start from the official n8n image specified in your compose file
 FROM n8nio/n8n:latest
 
-# Switch to root to install packages
+# Install FFmpeg using Alpine's package manager (apk)
 USER root
 
-# Install ffmpeg using apt (Debian/Ubuntu package manager)
-RUN apt-get update && \
-    apt-get install -y ffmpeg && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+# Update packages and install ffmpeg
+# The 'no-cache' option and removal of lists perform the same cleanup as before.
+RUN apk update \
+    && apk add --no-cache ffmpeg \
+    && rm -rf /var/cache/apk/*
 
-# Switch back to the node user for security
+# Switch back to the non-root user (important for security)
 USER node
