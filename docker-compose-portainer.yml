@@ -75,11 +75,9 @@ services:
     networks:
       - web
 
+
   n8n:
-    build:
-      context: ./services/n8n-ffmpeg
-      dockerfile: Dockerfile
-    image: n8n-ffmpeg:latest
+    image: ghcr.io/zimos3d/n8n-custom:latest 
     restart: unless-stopped
     environment:
       - DB_TYPE=postgresdb
