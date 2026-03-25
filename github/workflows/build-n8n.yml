@@ -3,7 +3,7 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'Dockerfile' # Only runs if you change the Dockerfile
+      - 'services/n8n-ffmpeg/Dockerfile' # Only runs if you change the Dockerfile
       - 'docker-compose-portainer.yml' # Or whenever you tweak the stack
 
 jobs:
