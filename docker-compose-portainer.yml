@@ -22,11 +22,13 @@ services:
     #   - "traefik.http.routers.ollama.tls.certresolver=myresolver"
 
   openwebui:
-    image: ghcr.io/open-webui/open-webui:main
+    image: ghcr.io/open-webui/open-webui:ollama
     restart: unless-stopped
     environment:
       - OLLAMA_API_BASE_URL=http://ollama:11434
       - OPENAI_API_KEY=none
+      - HOST=0.0.0.0
+      - PORT=8080
     volumes:
       - openwebui_data:/app/backend/data
     networks:
@@ -42,11 +44,11 @@ services:
 
 
   foundryvtt:
-    image: felddy/foundryvtt:13.351
+    image: felddy/foundryvtt:13
     restart: unless-stopped
     environment:
-      - FOUNDRY_USERNAME=${FOUNDRY_USERNAME}
-      - FOUNDRY_PASSWORD=${FOUNDRY_PASSWORD}
+      # - FOUNDRY_USERNAME=${FOUNDRY_USERNAME}
+      # - FOUNDRY_PASSWORD=${FOUNDRY_PASSWORD}
       - FOUNDRY_ADMIN_KEY=${FOUNDRY_ADMIN_KEY}
       - FOUNDRY_PROXY_SSL=true
       - FOUNDRY_PROXY_PORT=443
@@ -75,9 +77,8 @@ services:
     networks:
       - web
 
-
   n8n:
-    image: ghcr.io/zimos3d/n8n-custom:latest 
+    image: ghcr.io/zimos3d/n8n-custom:latest
     restart: unless-stopped
     environment:
       - DB_TYPE=postgresdb
@@ -95,6 +96,13 @@ services:
       - N8N_HOST=n8n.zimos3d.com
       - N8N_PROTOCOL=https
       - N8N_PORT=5678
+      - NODES_EXCLUDE="[]"
+      - N8N_LICENSE_ACTIVATION_KEY=${N8N_LICENSE_ACTIVATION_KEY}
+      - N8N_RESTRICT_FILE_ACCESS_TO=""
+      - N8N_SSRF_ALLOWED_HOSTNAMES=host.docker.internal,*.zimos3d.com,whisper
+      - NO_PROXY=localhost,127.0.0.1,host.docker.internal,whisper
+      - N8N_SSRF_ALLOW_INTERNAL_IPS=true
+
 
     volumes:
       - n8n_data:/home/node/.n8n
@@ -109,44 +117,50 @@ services:
     networks:
       - web
 
-  comfyui:
-    image: obeliks/comfyui:master-cu118
-    restart: unless-stopped
-    runtime: nvidia  
-    networks:
-      - web
-    ports:
-      - "8188:8188"  
-    environment:
-      - NVIDIA_VISIBLE_DEVICES=all
-      - NVIDIA_DRIVER_CAPABILITIES=all  
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.comfyui.rule=Host(`comfy.zimos3d.com`)"
-      - "traefik.http.routers.comfyui.entrypoints=websecure"
-      - "traefik.http.routers.comfyui.tls=true"
-    volumes:
-      - comfyui_data:/workspace
-      - /mnt/e/selfhosted/comfyui_data/models:/app/models  # Persistent model storage
-      - /mnt/e/selfhosted/comfyui_data/input:/app/input    # Optional: input images
-      - /mnt/e/selfhosted/comfyui_data/output:/app/output  # Optional: output images
-    command: >
-      python main.py --listen 0.0.0.0 --port 8188 --lowvram
+  # comfyui:
+  #   image: obeliks/comfyui:master-cu118
+  #   restart: unless-stopped
+  #   runtime: nvidia  
+  #   networks:
+  #     - web
+  #   ports:
+  #     - "8188:8188"  
+  #   environment:
+  #     - NVIDIA_VISIBLE_DEVICES=all
+  #     - NVIDIA_DRIVER_CAPABILITIES=all  
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.comfyui.rule=Host(`comfy.zimos3d.com`)"
+  #     - "traefik.http.routers.comfyui.entrypoints=websecure"
+  #     - "traefik.http.routers.comfyui.tls=true"
+  #   volumes:
+  #     - comfyui_data:/workspace
+  #     - /mnt/e/selfhosted/comfyui_data/models:/app/models  # Persistent model storage
+  #     - /mnt/e/selfhosted/comfyui_data/input:/app/input    # Optional: input images
+  #     - /mnt/e/selfhosted/comfyui_data/output:/app/output  # Optional: output images
+  #   command: >
+  #     python main.py --listen 0.0.0.0 --port 8188 --lowvram
 
 
+  
   whisper:
     container_name: whisper-asr
     image: onerahmet/openai-whisper-asr-webservice:latest-gpu
     restart: unless-stopped
+    runtime: nvidia
     ports:
       - "9001:9000"
     environment:
       - ASR_ENGINE=whisperx
-      - ASR_MODEL=medium
-      - HF_TOKEN=${HUGGINGFACE_TOKEN}
+      - ASR_MODEL=small.en
+      - ASR_DEVICE=cuda
+      - ASR_QUANTIZATION=int8
+      # - HF_TOKEN=${HUGGINGFACE_TOKEN}
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=all
-      - WHISPER_URL=http://whisper:9001 
+      # - WHISPER_URL=http://whisper:9001 
+      - HOST=0.0.0.0  # Add this
+      - PORT=9000
     deploy:
       resources:
         reservations:
@@ -164,26 +178,23 @@ networks:
   web:
     external: true
 
+
+
 volumes:
+
   ollama_data:
-    external: true
-    name: zstack_ollama_data
+    driver: local
   openwebui_data:
-    external: true
-    name: zstack_openwebui_data
+    driver: local
   foundry_data:
-    external: true
+    driver: external
     name: zstack_foundry_data
   n8n_data:
-    external: true
+    driver: external
     name: zstack_n8n_data
   n8n_postgres_data:
-    external: true
-    name: zstack_n8n_postgres_data
-  comfyui_data:
-    external: true
-    name: zstack_comfyui_data
+    driver: local
+  # comfyui_data:
+    # driver: local
   whisper_models:
-    external: true
-    name: zstack_whisper_models
-
+    driver: local
