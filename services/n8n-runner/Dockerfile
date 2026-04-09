@@ -11,6 +11,7 @@ USER root
 # but usually, 'runners' still has basic alpine tools.
 # RUN apk add --no-cache python3 py3-pip
 
+
 # Copy FFmpeg and FFprobe from the static source
 COPY --from=ffmpeg-source /ffmpeg /usr/local/bin/
 COPY --from=ffmpeg-source /ffprobe /usr/local/bin/
