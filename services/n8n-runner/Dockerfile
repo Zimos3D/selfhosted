@@ -18,5 +18,8 @@ COPY --from=ffmpeg-source /ffprobe /usr/local/bin/
 # Ensure the runner user can execute them
 RUN chmod +x /usr/local/bin/ffmpeg /usr/local/bin/ffprobe
 
+# Copy the task runners config with allowlisted modules
+COPY n8n-task-runners.json /etc/n8n-task-runners.json
+
 # Switch back to the non-root runner user
 USER runner
