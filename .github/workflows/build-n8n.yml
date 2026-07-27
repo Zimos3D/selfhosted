@@ -33,6 +33,6 @@ jobs:
           # This creates an image named: ghcr.io/zimos3d/n8n-custom:latest
           tags: ghcr.io/zimos3d/n8n-custom:latest
 
-      - name: Trigger Portainer Webhook
-        run: |
-          curl -X POST "${{ secrets.PORTAINER_WEBHOOK_URL }}"
+      # - name: Trigger Portainer Webhook
+      #   run: |
+      #     curl -X POST "${{ secrets.PORTAINER_WEBHOOK_URL }}"
