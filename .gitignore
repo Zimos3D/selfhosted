@@ -5,3 +5,4 @@
 /comfyui_models
 /foundry-userdata
 /cloudflared
+/.env.wsl
