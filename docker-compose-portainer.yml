@@ -6,20 +6,12 @@ services:
     image: ollama/ollama:latest
     restart: unless-stopped
     runtime: nvidia
-    # ports:
-    #   - "11434:11434"
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
     volumes:
-      - ollama_data:/root/.ollama
+      - "${DATA_PATH}/zstack_ollama_data:/root/.ollama"
     networks:
       - web
-    # labels:
-    #   - "traefik.enable=true"
-    #   - "traefik.http.routers.ollama.rule=Host(`ollama.zimos3d.com`)"
-    #   - "traefik.http.routers.ollama.entrypoints=websecure"
-    #   - "traefik.http.routers.ollama.tls=true"
-    #   - "traefik.http.routers.ollama.tls.certresolver=myresolver"
 
   openwebui:
     image: ghcr.io/open-webui/open-webui:ollama
@@ -30,7 +22,7 @@ services:
       - HOST=0.0.0.0
       - PORT=8080
     volumes:
-      - openwebui_data:/app/backend/data
+      - "${DATA_PATH}/zstack_openwebui_data:/app/backend/data"
     networks:
       - web
     depends_on:
@@ -47,14 +39,12 @@ services:
     image: felddy/foundryvtt:13
     restart: unless-stopped
     environment:
-      # - FOUNDRY_USERNAME=${FOUNDRY_USERNAME}
-      # - FOUNDRY_PASSWORD=${FOUNDRY_PASSWORD}
       - FOUNDRY_ADMIN_KEY=${FOUNDRY_ADMIN_KEY}
       - FOUNDRY_PROXY_SSL=true
       - FOUNDRY_PROXY_PORT=443
       - FOUNDRY_HOSTNAME=${FOUNDRY_HOSTNAME}
     volumes:
-      - foundry_data:/data
+      - "${DATA_PATH}/zstack_foundry_data:/data"
     networks:
       - web
     labels:
@@ -74,7 +64,10 @@ services:
       POSTGRES_USER: n8n_user
       POSTGRES_PASSWORD: ${N8N_DB_PASSWORD}
     volumes:
-      - n8n_postgres_data:/var/lib/postgresql/data
+      # NOTE: Bind mounts with Postgres can have permission issues
+      # If you get permission errors, run:
+      # sudo chown 999:999 /mnt/nvme-linux/srv/docker/container-data/zstack_n8n_postgres_data
+      - "${DATA_PATH}/zstack_n8n_postgres_data:/var/lib/postgresql/data"
     networks:
       - web
 
@@ -112,12 +105,8 @@ services:
       - N8N_RUNNERS_MODE=external
       - N8N_RUNNERS_AUTH_TOKEN=fartbucket
       - N8N_RUNNERS_BROKER_LISTEN_ADDRESS=0.0.0.0
-      # - N8N_RUNNERS_TASK_REQUEST_TIMEOUT=30
-      # - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
-      # - N8N_NATIVE_PYTHON_RUNNER=false
-      # - N8N_RUNNERS_BROKER_PORT=5679
     volumes:
-      - n8n_data:/home/node/.n8n
+      - "${DATA_PATH}/zstack_n8n_data:/home/node/.n8n"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.n8n.rule=Host(`n8n.zimos3d.com`)"
@@ -136,40 +125,14 @@ services:
         - N8N_RUNNERS_AUTH_TOKEN=fartbucket
         - N8N_RUNNERS_TASK_BROKER_URI=http://n8n:5679  
       volumes:
-        - n8n_data:/home/node/.n8n # Crucial: Must be the exact same path
+        # Must match n8n volume path for shared workflows
+        - "${DATA_PATH}/zstack_n8n_data:/home/node/.n8n"
       networks:
-        # - web
         - backend
       depends_on:
         - n8n
 
 
-  # comfyui:
-  #   image: obeliks/comfyui:master-cu118
-  #   restart: unless-stopped
-  #   runtime: nvidia  
-  #   networks:
-  #     - web
-  #   ports:
-  #     - "8188:8188"  
-  #   environment:
-  #     - NVIDIA_VISIBLE_DEVICES=all
-  #     - NVIDIA_DRIVER_CAPABILITIES=all  
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "traefik.http.routers.comfyui.rule=Host(`comfy.zimos3d.com`)"
-  #     - "traefik.http.routers.comfyui.entrypoints=websecure"
-  #     - "traefik.http.routers.comfyui.tls=true"
-  #   volumes:
-  #     - comfyui_data:/workspace
-  #     - /mnt/e/selfhosted/comfyui_data/models:/app/models  # Persistent model storage
-  #     - /mnt/e/selfhosted/comfyui_data/input:/app/input    # Optional: input images
-  #     - /mnt/e/selfhosted/comfyui_data/output:/app/output  # Optional: output images
-  #   command: >
-  #     python main.py --listen 0.0.0.0 --port 8188 --lowvram
-
-
-  
   whisper:
     container_name: whisper-asr
     image: onerahmet/openai-whisper-asr-webservice:latest-gpu
@@ -182,11 +145,9 @@ services:
       - ASR_MODEL=small.en
       - ASR_DEVICE=cuda
       - ASR_QUANTIZATION=int8
-      # - HF_TOKEN=${HUGGINGFACE_TOKEN}
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=all
-      # - WHISPER_URL=http://whisper:9001 
-      - HOST=0.0.0.0  # Add this
+      - HOST=0.0.0.0
       - PORT=9000
     deploy:
       resources:
@@ -196,7 +157,7 @@ services:
               count: all
               capabilities: [gpu]
     volumes:
-      - whisper_models:/root/.cache/whisper
+      - "${DATA_PATH}/zstack_whisper_models:/root/.cache/whisper"
     networks:
       - web
 
@@ -207,24 +168,3 @@ networks:
   backend:
     name: backend
     driver: bridge
-
-
-
-volumes:
-
-  ollama_data:
-    driver: local
-  openwebui_data:
-    driver: local
-  foundry_data:
-    driver: external
-    name: zstack_foundry_data
-  n8n_data:
-    driver: external
-    name: zstack_n8n_data
-  n8n_postgres_data:
-    driver: local
-  # comfyui_data:
-    # driver: local
-  whisper_models:
-    driver: local

@@ -1,0 +1,43 @@
+version: "3.8"
+
+services:
+  5etools:
+    image: ghcr.io/5etools-mirror-3/5etools-src:latest
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - "${DATA_PATH}/5etools_data:/user_data"
+    networks:
+      - web
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.5etools.rule=Host(`5etools.zimos3d.com`)"
+      - "traefik.http.routers.5etools.entrypoints=websecure"
+      - "traefik.http.routers.5etools.tls=true"
+      - "traefik.http.routers.5etools.tls.certresolver=myresolver"
+      - "traefik.http.services.5etools.loadbalancer.server.port=80" 
+
+  foundryvtt:
+    image: felddy/foundryvtt:14
+    restart: unless-stopped
+    environment:
+      - CONTAINER_CACHE=/data/container_cache
+      - FOUNDRY_ADMIN_KEY=${FOUNDRY_ADMIN_KEY}
+      - FOUNDRY_PROXY_SSL=true
+      - FOUNDRY_PROXY_PORT=443
+      - FOUNDRY_HOSTNAME=${FOUNDRY_HOSTNAME}
+    volumes:
+      - "${DATA_PATH}/zstack_foundry_data:/data"
+    networks:
+      - web
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.foundry.rule=Host(`foundry.zimos3d.com`)"
+      - "traefik.http.routers.foundry.entrypoints=websecure"
+      - "traefik.http.routers.foundry.tls=true"
+      - "traefik.http.routers.foundry.tls.certresolver=myresolver"
+      
+networks:
+  web:
+    external: true

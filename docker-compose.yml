@@ -1,4 +1,4 @@
-# version: '3.8'
+version: '3.8'
 
 services:
   traefik:
@@ -21,12 +21,11 @@ services:
 
     ports:
       - "80:80"
-      # Testing to see if this port is actually necessary. I think maybe not.
-      # - "8080:8080"
       - "443:443"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "/root/selfhosted/letsencrypt:/letsencrypt"
+      # Bind mount instead of named volume
+      - "${DATA_PATH}/selfhosted_traefik_letsencrypt:/letsencrypt"
       - "./certs:/certs:ro"
       - "./tls-dynamic.yml:/tls-dynamic.yml:ro" 
     networks:
@@ -47,7 +46,7 @@ services:
       - tunnel
       - run
     volumes:
-      - ./cloudflared/config.yml:/etc/cloudflared/config.yml:ro
+      - "${DATA_PATH}/selfhosted_cloudflared_config:/etc/cloudflared:ro"
     networks:
       - web
     labels:
@@ -61,7 +60,8 @@ services:
       - "9000:9000"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - portainer_data:/data
+      # Bind mount instead of named volume
+      - "${DATA_PATH}/selfhosted_portainer_data:/data"
     networks:
       - web
     labels:
@@ -78,10 +78,4 @@ networks:
     name: web
     driver: bridge
 
-volumes:
-  traefik_letsencrypt:
-    driver: local
-  cloudflared_config:
-    driver: local
-  portainer_data:
-    driver: local
+# No volumes section needed—everything is bind mounted
